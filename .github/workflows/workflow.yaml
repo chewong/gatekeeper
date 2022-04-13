@@ -1,27 +1,6 @@
 name: build_test_release
 on:
-  push:
-    paths-ignore:
-      - ".github/workflows/website.yaml"
-      - "docs/**"
-      - "library/**"
-      - "demo/**"
-      - "deprecated/**"
-      - "example/**"
-      - "website/**"
-      - "**.md"
-      - "!cmd/build/helmify/static/README.md"
-  pull_request:
-    paths-ignore:
-      - ".github/workflows/website.yaml"
-      - "docs/**"
-      - "library/**"
-      - "demo/**"
-      - "deprecated/**"
-      - "example/**"
-      - "website/**"
-      - "**.md"
-      - "!cmd/build/helmify/static/README.md"
+  workflow_dispatch:
 
 env:
   GITHUB_REPO: open-policy-agent/gatekeeper
@@ -403,3 +382,14 @@ jobs:
           charts_dir: charts
           target_dir: charts
           linting: off
+
+      - name: Create release branch if not exist
+        if: ${{ contains(github.ref, '-rc.0') }}
+        run: |
+          MAJOR_VERSION="$(echo "${TAG}" | cut -d '.' -f1)"
+          MINOR_VERSION="$(echo "${TAG}" | cut -d '.' -f2)"
+          RELEASE_BRANCH="release.${MAJOR_VERSION}.${MINOR_VERSION}"
+          git branch -a | grep "${RELEASE_BRANCH}" && exit 0
+
+          git checkout -b "${RELEASE_BRANCH}"
+          git push --set-upstream origin "${RELEASE_BRANCH}"
