@@ -25,7 +25,11 @@ spec:
   template:
     metadata:
       annotations:
+        {{- if .Values.podAnnotations }}
         {{- toYaml .Values.podAnnotations | trim | nindent 8 }}
+        {{- else }}
+        container.seccomp.security.alpha.kubernetes.io/manager: runtime/default
+        {{- end }}
       labels:
 {{- include "gatekeeper.podLabels" . }}
         app: '{{ template "gatekeeper.name" . }}'
